@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDoList</title>
+    <script src="../vue.js"></script>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="root">
+    <div>
+    <header>
+        <div class="container">
+            <h2>ToDoList</h2>
+            <input type="text" placeholder="请输入事项" v-model="con" @keyup.13="add" v-focus>
+        </div>
+    </header>
+    <div class="btns">
+        <button :class="{red:status=='all'}" @click="changeStatus('all')">全部</button>
+        <button :class="{red:status=='0'}" @click="changeStatus('0')">未完成</button>
+        <button :class="{red:status=='1'}" @click="changeStatus('1')">已完成</button>
+    </div>
+    <div class="opt">
+        <ul v-if="all.length!=0">
+            <li v-for="item in datas">
+                <span class="option" :class="{cred:item.state == 1}" @click="changeState(item)"></span>
+                <div class="con" @dblclick="edit(item)" v-if="item.edit">{{item.title}}</div>
+                <input type="text" v-model="item.title" v-else @blur="edit(item)" style="{width: 90%;height:30px;border:none;outline:none}">
+                <p @click="del(item.id)">删除</p>
+            </li>
+        </ul>
+        <div v-else>没有数据</div>
+    </div>
+    </div>
+</div>
+<script src="directive.js"></script>
+<script>
+    new Vue({
+        el:"#root",
+        data:{
+            con:"",
+            all:localStorage.toDo ? JSON.parse(localStorage.toDo) : [],
+            status:"all"
+        },
+        computed:{
+            datas(){
+                return this.all.filter((a)=>{
+                    if(this.status=="all"){
+                        return a;
+                    }else{
+                        if(a.state==this.status){
+                            return a;
+                        }
+                    }
+                })
+            }
+        },
+        methods:{
+            add(){
+                if(!this.con){
+                    alert("请输入内容");
+                    return
+                }
+                var obj = {};
+                obj.title=this.con;
+                obj.id=Math.random()+(new Date()).getTime();
+                obj.state = 0;
+                obj.edit = true;
+                this.all.push(obj);
+                this.con="";
+                localStorage.toDo = JSON.stringify(this.all)
+            },
+            changeStatus(val){
+                this.status = val;
+            },
+            changeState(obj){
+                if(obj.state == 0){
+                    obj.state = 1;
+                }else{
+                    obj.state = 0;
+                }
+                localStorage.toDo = JSON.stringify(this.all)
+            },
+            edit(obj){
+                if(obj.edit == true){
+                    obj.edit = false;
+                }else{
+                    obj.edit = true;
+                }
+                localStorage.toDo = JSON.stringify(this.all)
+            },
+            del(id){
+                this.all = this.all.filter(function(a){
+                    if(a.id != id){
+                        return a;
+                    }
+                })
+                localStorage.toDo = JSON.stringify(this.all)
+            }
+        }
+    })
+</script>
+</body>
+</html>
